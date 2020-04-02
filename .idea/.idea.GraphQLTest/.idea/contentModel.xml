@@ -10,10 +10,9 @@
       <e p="bin" t="ExcludeRecursive" />
       <e p="GraphQLTest.csproj" t="IncludeRecursive" />
       <e p="GraphQLTest.sln" t="IncludeFlat" />
-      <e p="HttpServer.cs" t="Include" />
       <e p="MyServer.cs" t="Include" />
       <e p="obj" t="ExcludeRecursive">
-        <e p="Debug" t="Include">
+        <e p="Release" t="Include">
           <e p="netcoreapp3.1" t="Include">
             <e p="GraphQLTest.AssemblyInfo.cs" t="Include" />
           </e>
@@ -21,6 +20,8 @@
       </e>
       <e p="packages" t="ExcludeRecursive" />
       <e p="Program.cs" t="Include" />
+      <e p="schema.graphql" t="Include" />
+      <e p="Utility.cs" t="Include" />
     </e>
   </component>
 </project>

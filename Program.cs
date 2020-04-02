@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using GraphQL;
-using GraphQL.SystemTextJson;
 using GraphQL.Types;
+using Microsoft.Data.Sqlite;
 
 namespace GraphQLTest
 {
@@ -14,7 +9,7 @@ namespace GraphQLTest
     {
         public string Query { get; set; }
     }
-    
+
     public class Droid
     {
         public string Id { get; set; }
@@ -38,8 +33,15 @@ namespace GraphQLTest
     [GraphQLMetadata("Droid", IsTypeOf = typeof(Droid))]
     public class DroidType
     {
-        public string Id(Droid droid) => droid.Id;
-        public string Name(Droid droid) => droid.Name;
+        public string Id(Droid droid)
+        {
+            return droid.Id;
+        }
+
+        public string Name(Droid droid)
+        {
+            return droid.Name;
+        }
 
         // these two parameters are optional
         // ResolveFieldContext provides contextual information about the field
@@ -53,7 +55,19 @@ namespace GraphQLTest
     {
         public static void Main(string[] args)
         {
-            App.Instance.Run();
+            const string cs = "Data Source=:memory:";
+            const string stm = "SELECT SQLITE_VERSION()";
+
+            var connection = new SqliteConnection(cs);
+            connection.Open();
+
+            var cmd = new SqliteCommand(stm, connection);
+            var version = cmd.ExecuteScalar().ToString();
+
+            Console.WriteLine($"SQLite version: {version}");
+
+            var app = new App();
+            app.Run();
         }
     }
 }

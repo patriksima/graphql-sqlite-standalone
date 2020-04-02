@@ -1,0 +1,13 @@
+﻿type Droid {
+    id: ID!
+    name: String!
+    friend: Character
+}
+
+type Character {
+    name: String!
+}
+
+type Query {
+    hero(id: ID): Droid
+}

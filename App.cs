@@ -11,21 +11,17 @@ namespace GraphQLTest
 {
     public class App : IDisposable
     {
-        private static readonly Lazy<App>
-            Lazy =
-                new Lazy<App>
-                    (() => new App());
-
         private MyServer _server;
+        private string _schema;
 
-        private App()
+        public App()
         {
+            LoadSchema();
         }
-
-        public static App Instance => Lazy.Value;
 
         public void Dispose()
         {
+            _server.Stop();
             _server.OnAccept -= OnAcceptUtf8;
         }
 
@@ -35,6 +31,12 @@ namespace GraphQLTest
             _server.Start(9000);
             _server.OnAccept += OnAcceptUtf8;
             _server.Listen();
+        }
+
+        private async void LoadSchema()
+        {
+            using var reader = File.OpenText($@"D:\RiderProjects\GraphQLTest\schema.graphql");
+            _schema = await reader.ReadToEndAsync();
         }
 
         private void OnAcceptUtf8(HttpListenerContext context)
@@ -61,21 +63,7 @@ namespace GraphQLTest
 
         private async void OnQuery(HttpListenerContext context, string query)
         {
-            var schema = Schema.For(@"
-          type Droid {
-            id: String!
-            name: String!
-            friend: Character
-          }
-
-          type Character {
-            name: String!
-          }
-
-          type Query {
-            hero: Droid
-          }
-        ", _ =>
+            var schema = Schema.For(_schema, _ =>
             {
                 _.Types.Include<DroidType>();
                 _.Types.Include<Query>();
@@ -84,17 +72,7 @@ namespace GraphQLTest
 
             var json = await schema.ExecuteAsync(_ => { _.Query = query; });
 
-
-            var response = context.Response;
-            // Construct a response.
-            var responseString = json;
-            var buffer = Encoding.UTF8.GetBytes(responseString);
-            // Get a response stream and write the response to it.
-            response.ContentLength64 = buffer.Length;
-            var output = response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            // You must close the output stream.
-            output.Close();
+            Utility.Response(context.Response, json);
         }
     }
 }

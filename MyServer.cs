@@ -7,8 +7,6 @@ namespace GraphQLTest
     {
         private readonly HttpListener _listener = new HttpListener();
 
-        public Action<HttpListenerContext> OnAccept;
-
         public MyServer(int maxThreads)
         {
         }
@@ -17,6 +15,8 @@ namespace GraphQLTest
         {
             Stop();
         }
+
+        public event Action<HttpListenerContext> OnAccept;
 
         public void Start(int port)
         {
