@@ -11,7 +11,7 @@ namespace GraphQLTest
 {
     public class App : IDisposable
     {
-        private MyServer _server;
+        private HttpServer _server;
         private string _schema;
 
         public App()
@@ -22,14 +22,14 @@ namespace GraphQLTest
         public void Dispose()
         {
             _server.Stop();
-            _server.OnAccept -= OnAcceptUtf8;
+            _server.OnProcess -= OnProcessUtf8;
         }
 
         public void Run()
         {
-            _server = new MyServer(3);
+            _server = new HttpServer(3);
             _server.Start(9000);
-            _server.OnAccept += OnAcceptUtf8;
+            _server.OnProcess += OnProcessUtf8;
             _server.Listen();
         }
 
@@ -39,7 +39,7 @@ namespace GraphQLTest
             _schema = await reader.ReadToEndAsync();
         }
 
-        private void OnAcceptUtf8(HttpListenerContext context)
+        private void OnProcessUtf8(HttpListenerContext context)
         {
             var request = context.Request;
             if (!request.HasEntityBody)
@@ -54,7 +54,7 @@ namespace GraphQLTest
             Debug.WriteLine($"Content: {content}");
 
             var utf8JsonReader = new Utf8JsonReader(Encoding.ASCII.GetBytes(content));
-            var js = JsonSerializer.Deserialize<GQuery>(ref utf8JsonReader,
+            var js = JsonSerializer.Deserialize<GraphQuery>(ref utf8JsonReader,
                 new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
 
             Debug.WriteLine($"Query: {js.Query}");
@@ -65,7 +65,8 @@ namespace GraphQLTest
         {
             var schema = Schema.For(_schema, _ =>
             {
-                _.Types.Include<DroidType>();
+                _.Types.Include<User>();
+                _.Types.Include<Item>();
                 _.Types.Include<Query>();
             });
 

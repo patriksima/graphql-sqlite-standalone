@@ -1,13 +1,22 @@
-﻿type Droid {
+﻿type User {
     id: ID!
     name: String!
-    friend: Character
+    lastname: String!
+    email: String!
+    items: [Item]
 }
 
-type Character {
+type Item {
+    id: ID!
     name: String!
+    class: String!
+    health: Int!
+    users: [User]
 }
 
 type Query {
-    hero(id: ID): Droid
+    user(id: ID): User,
+    users(itemid: ID, fulltext: String): [User]
+    item(id: ID): Item,
+    items(userid: ID, fulltext: String): [Item]
 }

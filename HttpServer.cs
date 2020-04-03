@@ -3,11 +3,11 @@ using System.Net;
 
 namespace GraphQLTest
 {
-    public class MyServer : IDisposable
+    public class HttpServer : IDisposable
     {
         private readonly HttpListener _listener = new HttpListener();
 
-        public MyServer(int maxThreads)
+        public HttpServer(int maxThreads)
         {
         }
 
@@ -16,7 +16,7 @@ namespace GraphQLTest
             Stop();
         }
 
-        public event Action<HttpListenerContext> OnAccept;
+        public event Action<HttpListenerContext> OnProcess;
 
         public void Start(int port)
         {
@@ -32,7 +32,7 @@ namespace GraphQLTest
                 {
                     var listener = ar.AsyncState as HttpListener;
                     var context = listener?.EndGetContext(ar);
-                    OnAccept?.Invoke(context);
+                    OnProcess?.Invoke(context);
                 }, _listener);
                 result.AsyncWaitHandle.WaitOne();
             }

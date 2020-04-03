@@ -1,70 +1,73 @@
 ﻿using System;
+using System.Globalization;
+using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
+using CsvHelper;
 using GraphQL;
 using GraphQL.Types;
-using Microsoft.Data.Sqlite;
+using SQLite;
+
 
 namespace GraphQLTest
 {
-    public class GQuery
-    {
-        public string Query { get; set; }
-    }
-
-    public class Droid
-    {
-        public string Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class Character
-    {
-        public string Name { get; set; }
-    }
-
-    public class Query
-    {
-        [GraphQLMetadata("hero")]
-        public Droid GetHero()
-        {
-            return new Droid {Id = "1", Name = "R2-D2"};
-        }
-    }
-
-    [GraphQLMetadata("Droid", IsTypeOf = typeof(Droid))]
-    public class DroidType
-    {
-        public string Id(Droid droid)
-        {
-            return droid.Id;
-        }
-
-        public string Name(Droid droid)
-        {
-            return droid.Name;
-        }
-
-        // these two parameters are optional
-        // ResolveFieldContext provides contextual information about the field
-        public Character Friend(ResolveFieldContext context, Droid source)
-        {
-            return new Character {Name = "C3-PO"};
-        }
-    }
-
     public static class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            const string cs = "Data Source=:memory:";
-            const string stm = "SELECT SQLITE_VERSION()";
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "graphql.db3");
+            Console.WriteLine(path);
+            var db = new SQLiteAsyncConnection(path);
 
-            var connection = new SqliteConnection(cs);
-            connection.Open();
+            await db.DropTableAsync<DbUser>();
+            await db.DropTableAsync<DbItem>();
+            await db.DropTableAsync<DbUserItem>();
 
-            var cmd = new SqliteCommand(stm, connection);
-            var version = cmd.ExecuteScalar().ToString();
+            await db.CreateTableAsync<DbUser>();
+            await db.CreateTableAsync<DbItem>();
+            await db.CreateTableAsync<DbUserItem>();
 
-            Console.WriteLine($"SQLite version: {version}");
+            // read demo data
+            Console.WriteLine("Loading demo data...");
+            using (var reader = new StreamReader(@"data\users.csv"))
+            {
+                using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                var items = csv.GetRecords<DbUser>();
+                await db.InsertAllAsync(items);
+            }
+
+            using (var reader = new StreamReader(@"data\items.csv"))
+            {
+                using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                var items = csv.GetRecords<DbItem>();
+                await db.InsertAllAsync(items);
+            }
+
+            using (var reader = new StreamReader(@"data\useritem.csv"))
+            {
+                using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                var items = csv.GetRecords<DbUserItem>();
+                await db.InsertAllAsync(items);
+            }
+
+            Console.WriteLine("Searching users with name starts with P...");
+            var query = db.Table<DbUser>().Where(v => v.Name.StartsWith("P"));
+
+            await query.ToListAsync().ContinueWith((t) =>
+            {
+                foreach (var user in t.Result)
+                    Console.WriteLine($"User: {user.Id}, {user.Name}, {user.LastName}, {user.Email}");
+            });
+
+            Console.WriteLine("Searching items with name starts with C...");
+            var query2 = db.Table<DbItem>().Where(v => v.Name.StartsWith("C"));
+
+            await query2.ToListAsync().ContinueWith((t) =>
+            {
+                foreach (var item in t.Result)
+                    Console.WriteLine($"Item: {item.Id}, {item.Name}, {item.Class}, {item.Health}");
+            });
 
             var app = new App();
             app.Run();

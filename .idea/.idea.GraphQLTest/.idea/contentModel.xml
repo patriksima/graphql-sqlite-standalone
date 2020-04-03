@@ -8,9 +8,20 @@
       <e p=".gitignore" t="Include" />
       <e p="App.cs" t="Include" />
       <e p="bin" t="ExcludeRecursive" />
+      <e p="data" t="Include">
+        <e p="items.csv" t="Include" />
+        <e p="useritem.csv" t="Include" />
+        <e p="users.csv" t="Include" />
+      </e>
+      <e p="Database.cs" t="Include" />
+      <e p="DbItem.cs" t="Include" />
+      <e p="DbUser.cs" t="Include" />
+      <e p="DbUserItem.cs" t="Include" />
       <e p="GraphQLTest.csproj" t="IncludeRecursive" />
       <e p="GraphQLTest.sln" t="IncludeFlat" />
-      <e p="MyServer.cs" t="Include" />
+      <e p="GraphQuery.cs" t="Include" />
+      <e p="HttpServer.cs" t="Include" />
+      <e p="Item.cs" t="Include" />
       <e p="obj" t="ExcludeRecursive">
         <e p="Release" t="Include">
           <e p="netcoreapp3.1" t="Include">
@@ -20,7 +31,9 @@
       </e>
       <e p="packages" t="ExcludeRecursive" />
       <e p="Program.cs" t="Include" />
+      <e p="Query.cs" t="Include" />
       <e p="schema.graphql" t="Include" />
+      <e p="User.cs" t="Include" />
       <e p="Utility.cs" t="Include" />
     </e>
   </component>
