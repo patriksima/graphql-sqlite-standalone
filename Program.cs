@@ -50,7 +50,7 @@ namespace GraphQLTest
                 var items = csv.GetRecords<DbUserItem>();
                 await db.InsertAllAsync(items);
             }
-
+/*
             Console.WriteLine("Searching users with name starts with P...");
             var query = db.Table<DbUser>().Where(v => v.Name.StartsWith("P"));
 
@@ -68,8 +68,8 @@ namespace GraphQLTest
                 foreach (var item in t.Result)
                     Console.WriteLine($"Item: {item.Id}, {item.Name}, {item.Class}, {item.Health}");
             });
-
-            var app = new App();
+*/
+            var app = new App(db);
             app.Run();
         }
     }

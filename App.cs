@@ -1,21 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Schema;
 using GraphQL.SystemTextJson;
 using GraphQL.Types;
+using SQLite;
 
 namespace GraphQLTest
 {
     public class App : IDisposable
     {
+        private SQLiteAsyncConnection _db;
         private HttpServer _server;
         private string _schema;
 
-        public App()
+        public App(SQLiteAsyncConnection db)
         {
+            _db = db;
             LoadSchema();
         }
 
@@ -63,6 +68,17 @@ namespace GraphQLTest
 
         private async void OnQuery(HttpListenerContext context, string query)
         {
+            var schema = new Schema {Query = new MyQuery()};
+            var json = await schema.ExecuteAsync(_ =>
+            {
+                _.Query = query;
+                _.UserContext = new Dictionary<string, object>
+                {
+                    {"db", _db}
+                };
+            });
+
+            /*
             var schema = Schema.For(_schema, _ =>
             {
                 _.Types.Include<User>();
@@ -70,8 +86,17 @@ namespace GraphQLTest
                 _.Types.Include<Query>();
             });
 
+            var userCtx = new Dictionary<string, object>
+            {
+                {"db", _db}
+            };
 
-            var json = await schema.ExecuteAsync(_ => { _.Query = query; });
+            var json = await schema.ExecuteAsync(_ =>
+            {
+                _.Query = query;
+                _.UserContext = userCtx;
+            });
+            */
 
             Utility.Response(context.Response, json);
         }
