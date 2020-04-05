@@ -68,7 +68,7 @@ namespace GraphQLTest
 
         private async void OnQuery(HttpListenerContext context, string query)
         {
-            var schema = new Schema {Query = new MyQuery()};
+            var schema = new Schema {Query = new Query()};
             var json = await schema.ExecuteAsync(_ =>
             {
                 _.Query = query;
@@ -76,27 +76,8 @@ namespace GraphQLTest
                 {
                     {"db", _db}
                 };
+                _.ExposeExceptions = true;
             });
-
-            /*
-            var schema = Schema.For(_schema, _ =>
-            {
-                _.Types.Include<User>();
-                _.Types.Include<Item>();
-                _.Types.Include<Query>();
-            });
-
-            var userCtx = new Dictionary<string, object>
-            {
-                {"db", _db}
-            };
-
-            var json = await schema.ExecuteAsync(_ =>
-            {
-                _.Query = query;
-                _.UserContext = userCtx;
-            });
-            */
 
             Utility.Response(context.Response, json);
         }
