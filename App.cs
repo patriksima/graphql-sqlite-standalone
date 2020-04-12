@@ -5,7 +5,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using System.Xml.Schema;
 using GraphQL.SystemTextJson;
 using GraphQL.Types;
 using SQLite;
@@ -14,14 +13,12 @@ namespace GraphQLTest
 {
     public class App : IDisposable
     {
-        private SQLiteAsyncConnection _db;
+        private readonly SQLiteAsyncConnection _db;
         private HttpServer _server;
-        private string _schema;
 
         public App(SQLiteAsyncConnection db)
         {
             _db = db;
-            LoadSchema();
         }
 
         public void Dispose()
@@ -36,12 +33,6 @@ namespace GraphQLTest
             _server.Start(9000);
             _server.OnProcess += OnProcessUtf8;
             _server.Listen();
-        }
-
-        private async void LoadSchema()
-        {
-            using var reader = File.OpenText($@"D:\RiderProjects\GraphQLTest\schema.graphql");
-            _schema = await reader.ReadToEndAsync();
         }
 
         private void OnProcessUtf8(HttpListenerContext context)
