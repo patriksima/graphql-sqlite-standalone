@@ -43,18 +43,33 @@ namespace GraphQLTest
                 return;
             }
 
-            using var body = request.InputStream;
-            using var reader = new StreamReader(body, request.ContentEncoding);
-            var content = reader.ReadToEnd();
+            string content;
+            try
+            {
+                using var body = request.InputStream;
+                using var reader = new StreamReader(body, request.ContentEncoding);
+                content = reader.ReadToEnd();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                Utility.Response(context.Response, @"{""error"":""Invalid input""}");
+                return;
+            }
 
-            Debug.WriteLine($"Content: {content}");
+            try
+            {
+                var utf8JsonReader = new Utf8JsonReader(Encoding.ASCII.GetBytes(content));
+                var js = JsonSerializer.Deserialize<GraphQuery>(ref utf8JsonReader,
+                    new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
 
-            var utf8JsonReader = new Utf8JsonReader(Encoding.ASCII.GetBytes(content));
-            var js = JsonSerializer.Deserialize<GraphQuery>(ref utf8JsonReader,
-                new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
-
-            Debug.WriteLine($"Query: {js.Query}");
-            OnQuery(context, js.Query);
+                OnQuery(context, js.Query);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                Utility.Response(context.Response, @"{""error"":""Invalid input""}");
+            }
         }
 
         private async void OnQuery(HttpListenerContext context, string query)
